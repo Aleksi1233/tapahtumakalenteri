@@ -6,7 +6,7 @@
  
  • Käyttäjä näkee sovellukseen lisätyt tapahtumat.
  
- • Käyttäjä pystyy etsimään tietokohteita hakusanalla tai muulla perusteella, kuten tapahtumakalenteria selaamalla tai ajankohdalla.
+ • Käyttäjä pystyy etsimään tietokohteita hakusanalla tai muulla perusteella, kuten tapahtumakalenteria selaamalla.
  
  • Sovelluksessa on käyttäjäsivut, jotka näyttävät tilastoja ja käyttäjän lisäämät tapahtumat.
  
