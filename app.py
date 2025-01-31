@@ -1,11 +1,11 @@
 import sqlite3
 from flask import Flask
-from flask import redirect, render_template, request, session
+from flask import redirect, render_template, request, session, url_for, flash
 from werkzeug.security import generate_password_hash
 import db
 from werkzeug.security import check_password_hash
 import config
-
+import events
 
 app = Flask(__name__)
 app.secret_key = config.secret_key
@@ -14,6 +14,26 @@ app.secret_key = config.secret_key
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/new_event", methods=["GET", "POST"])
+def new_event():
+    if request.method == "POST":
+        title = request.form["title"]
+        description = request.form["description"]
+        event_start = request.form["event-start"]
+        event_end = request.form["event-end"]
+        event_space = request.form.get("event-space", "default")
+
+        if events.check_event_space_availability(event_start, event_end, event_space):
+            events.add_event(title, description, event_start, event_end, event_space)
+            flash(f"Event '{title}' created successfully!", "success")
+            return redirect(url_for("new_event"))
+        else:
+            flash("Event space is not available for the selected time.", "danger")
+            return redirect(url_for("new_event"))
+
+    return render_template("new_event.html")
 
 
 @app.route("/register")

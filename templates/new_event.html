@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fi">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Ilmoita tapahtuma</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    form {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    p {
+      margin-bottom: 15px;
+    }
+
+    input[type="text"],
+    input[type="datetime-local"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    input[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+
+    textarea {
+      height: 150px;
+    }
+
+    /* Flash message styles */
+    .flash-messages {
+      margin-bottom: 20px;
+    }
+
+    .flash-message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .flash-message.success {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+
+    .flash-message.danger {
+      background-color: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+
+  </style>
+</head>
+
+<body>
+  <h1>Uusi tapahtuma</h1>
+
+  <!-- Flash Messages Section -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="flash-message {{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Event Form -->
+  <form action="/new_event" method="post">
+    <p>
+      Otsikko: <br />
+      <input type="text" name="title" required />
+    </p>
+
+    <p>
+      Kuvaus: <br />
+      <textarea name="description"></textarea>
+    </p>
+
+    <p>
+      Aloituspäivämäärä ja aika: <br />
+      <input type="datetime-local" name="event-start" required />
+    </p>
+
+    <p>
+      Päättymispäivämäärä ja aika: <br />
+      <input type="datetime-local" name="event-end" required />
+    </p>
+
+    <!-- Optional Event Space Input -->
+    <p>
+      Tapahtumatila: <br />
+      <input type="text" name="event-space" required />
+    </p>
+
+    <input type="submit" value="Luo tapahtuma" />
+  </form>
+
+</body>
+
+</html>
