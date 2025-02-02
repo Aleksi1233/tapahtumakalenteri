@@ -69,18 +69,18 @@
     <h1>Tapahtumakalenteri</h1>
 
     <p>
-        <a href="/login">Kirjaudu sisään</a>
-        <a href="/register">Luo tunnus</a>
-        <a href="/logout">Kirjaudu ulos</a>
+        {% if session.username %}
+            Tervetuloa, {{ session.username }}!
+            <a href="/logout">Kirjaudu ulos</a> |
+            <a href="/my_events">Omat tapahtumat</a>  <!-- Link to My Events page -->
+        {% else %}
+            <a href="/login">Kirjaudu sisään</a> |
+            <a href="/register">Luo tunnus</a>
+        {% endif %}
     </p>
 
-    {% if session.username %}
-        <a href="/new_event">Ilmoita tapahtuma</a>
-    {% else %}
-        <p>Sinun täytyy <a href="/login">kirjautua sisään</a> tai <a href="/register">rekisteröityä</a> ilmoittaaksesi tapahtuman.</p>
-    {% endif %}
-
     <h2>Varaustilanne</h2>
+
 
     <div class="week-navigation">
         <a href="/?week={{ week_offset - 1 }}">Edellinen viikko</a> |
