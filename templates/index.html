@@ -22,7 +22,7 @@
             border: 1px solid #ddd;
             text-align: center;
             vertical-align: middle;
-            position: relative;  /* Positioning for event blocks */
+            position: relative;
         }
 
         .event {
@@ -31,9 +31,9 @@
             color: white;
             font-size: 12px;
             font-weight: bold;
-            position: absolute;  /* Positioning within the table cell */
+            position: absolute;
             width: 100%;
-            top: 50%;  /* Vertical centering */
+            top: 50%;
             transform: translateY(-50%);
         }
 
@@ -94,7 +94,7 @@
                 <tr>
                     <th>Tunti</th>
                     {% for day in week_dates %}
-                        <th>{{ day }}</th>  <!-- Displays "Ti 04.02.25" -->
+                        <th>{{ day }}</th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -124,6 +124,7 @@
 
 </body>
 </html>
+
 
 
 

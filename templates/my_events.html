@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Omat Tapahtumat</title>
+</head>
+<body>
+    <h1>Omat Tapahtumat</h1>
+
+    <p><a href="/">Takaisin kalenteriin</a></p>
+
+    {% if events %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Tapahtuma</th>
+                    <th>Kuvaus</th>
+                    <th>Alkaa</th>
+                    <th>Päättyy</th>
+                    <th>Paikka</th>
+                    <th>Tyyppi</th>
+                    <th>Toiminnot</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td>{{ event.title }}</td>
+                        <td>{{ event.description }}</td>
+                        <td>{{ event.event_start }}</td>
+                        <td>{{ event.event_end }}</td>
+                        <td>
+                            {% if event.event_space == 'space1' %}
+                                Auditorio
+                            {% elif event.event_space == 'space2' %}
+                                Kellari
+                            {% elif event.event_space == 'space3' %}
+                                Päälava
+                            {% else %}
+                                {{ event.event_space }}
+                            {% endif %}
+                        </td>
+                        <td>{{ event.event_type }}</td>
+                        <td>
+                            <a href="{{ url_for('edit_event', event_id=event.id) }}">Muokkaa</a> |
+                            <a href="{{ url_for('delete_event', event_id=event.id) }}" onclick="return confirm('Haluatko varmasti poistaa tämän tapahtuman?')">Poista</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Sinulla ei ole luotuja tapahtumia.</p>
+    {% endif %}
+</body>
+</html>

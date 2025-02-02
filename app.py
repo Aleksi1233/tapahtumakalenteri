@@ -94,7 +94,7 @@ def new_event():
         event_start = request.form["event-start"]
         event_end = request.form["event-end"]
         event_space = request.form.get("event-space", "default")
-        event_type = request.form["event-type"]  # Get the event type from the form
+        event_type = request.form["event-type"]  # You need to use event_type
 
         start_hour = int(event_start.split("T")[1].split(":")[0])
         end_hour = int(event_end.split("T")[1].split(":")[0])
@@ -104,12 +104,13 @@ def new_event():
             return redirect(url_for("new_event"))
 
         if events.check_event_space_availability(event_start, event_end, event_space):
-            # Pass event_type when adding the event
-            events.add_event(title, description, event_start, event_end, event_space, event_type)
-            flash(f"Tapahtuma '{title}' luotiin onnistuneesti!", "success")
+            # Pass event_type along with other parameters
+            username = session["username"]
+            events.add_event(title, description, event_start, event_end, event_space, event_type, username)
+            flash(f"Event '{title}' created successfully!", "success")
             return redirect(url_for("new_event"))
         else:
-            flash("Tapahtumatila ei ole käytettävissä valittuna aikana.", "danger")
+            flash("Event space is not available for the selected time.", "danger")
             return redirect(url_for("new_event"))
 
     return render_template("new_event.html")
@@ -133,6 +134,64 @@ def event_list():
             continue
 
     return render_template("index.html", events_by_space=events_by_space)
+
+
+@app.route("/my_events")
+def my_events():
+    if "username" not in session:
+        flash("Sinun täytyy kirjautua sisään nähdäksesi omat tapahtumat.", "danger")
+        return redirect(url_for("login"))
+
+    # Fetch events that belong to the logged-in user
+    events_list = events.get_user_events(session["username"])
+    return render_template("my_events.html", events=events_list)
+
+
+@app.route("/edit_event/<int:event_id>", methods=["GET", "POST"])
+def edit_event(event_id):
+    if "username" not in session:
+        flash("Sinun täytyy kirjautua sisään muokataksesi tapahtumaa.", "danger")
+        return redirect(url_for("login"))
+
+    event = events.get_event_by_id(event_id)
+
+    if event is None or event["username"] != session["username"]:
+        flash("Tätä tapahtumaa ei löydy tai et omista tätä tapahtumaa.", "danger")
+        return redirect(url_for("my_events"))
+
+    if request.method == "POST":
+        # Get updated event details from the form
+        title = request.form["title"]
+        description = request.form["description"]
+        event_start = request.form["event-start"]
+        event_end = request.form["event-end"]
+        event_space = request.form["event-space"]
+        event_type = request.form["event-type"]
+
+        # Update event in the database
+        events.update_event(event_id, title, description, event_start, event_end, event_space, event_type)
+        flash("Tapahtuma päivitetty onnistuneesti!", "success")
+        return redirect(url_for("my_events"))
+
+    return render_template("edit_event.html", event=event)
+
+
+@app.route("/delete_event/<int:event_id>")
+def delete_event(event_id):
+    if "username" not in session:
+        flash("Sinun täytyy kirjautua sisään poistaaksesi tapahtuman.", "danger")
+        return redirect(url_for("login"))
+
+    event = events.get_event_by_id(event_id)
+
+    if event is None or event["username"] != session["username"]:
+        flash("Tätä tapahtumaa ei löydy tai et omista tätä tapahtumaa.", "danger")
+        return redirect(url_for("my_events"))
+
+    # Delete event from the database
+    events.delete_event(event_id)
+    flash("Tapahtuma poistettu onnistuneesti!", "success")
+    return redirect(url_for("my_events"))
 
 
 @app.route("/register")

@@ -1,5 +1,6 @@
 import db
 
+
 def get_all_events():
     sql = (
         "SELECT id, title, description, event_start, event_end, event_space, event_type "
@@ -16,18 +17,18 @@ def get_all_events():
             "event_start": event_start,
             "event_end": event_end,
             "event_space": event_space,
-            "event_type": event_type  # Added event_type to the result
+            "event_type": event_type
         })
 
     return events
 
 
-def add_event(title, description, event_start, event_end, event_space, event_type):
+def add_event(title, description, event_start, event_end, event_space, event_type, username):
     sql = (
-        "INSERT INTO events (title, description, event_start, event_end, event_space, event_type) "
-        "VALUES (?, ?, ?, ?, ?, ?)"
+        "INSERT INTO events (title, description, event_start, event_end, event_space, event_type, username) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)"
     )
-    db.execute(sql, [title, description, event_start, event_end, event_space, event_type])  # Include event_type
+    db.execute(sql, [title, description, event_start, event_end, event_space, event_type, username])
 
 
 def check_event_space_availability(event_start, event_end, event_space):
@@ -56,8 +57,82 @@ def get_events_by_space(event_space):
             "title": title,
             "event_start": event_start,
             "event_end": event_end,
-            "event_type": event_type  # Added event_type to the result
+            "event_type": event_type
         })
 
     return events
+
+
+def get_user_events(username):
+    """Get events created by the logged-in user."""
+    sql = """
+        SELECT id, title, description, event_start, event_end, event_space, event_type
+        FROM events
+        WHERE username = ?
+        ORDER BY event_start
+    """
+    result = db.query(sql, [username])
+
+    events = []
+    for event_id, title, description, event_start, event_end, event_space, event_type in result:
+        events.append({
+            "id": event_id,
+            "title": title,
+            "description": description,
+            "event_start": event_start,
+            "event_end": event_end,
+            "event_space": get_space_name(event_space),  # Convert space code to human-readable name
+            "event_type": event_type
+        })
+    return events
+
+
+def get_event_by_id(event_id):
+    """Get an event by its ID."""
+    sql = """
+        SELECT id, title, description, event_start, event_end, event_space, event_type, username
+        FROM events
+        WHERE id = ?
+    """
+    result = db.query(sql, [event_id])
+    if result:
+        event_id, title, description, event_start, event_end, event_space, event_type, username = result[0]
+        return {
+            "id": event_id,
+            "title": title,
+            "description": description,
+            "event_start": event_start,
+            "event_end": event_end,
+            "event_space": event_space,
+            "event_type": event_type,
+            "username": username
+        }
+    return None
+
+
+def update_event(event_id, title, description, event_start, event_end, event_space, event_type):
+    """Update an event in the database."""
+    sql = """
+        UPDATE events
+        SET title = ?, description = ?, event_start = ?, event_end = ?, event_space = ?, event_type = ?
+        WHERE id = ?
+    """
+    db.execute(sql, [title, description, event_start, event_end, event_space, event_type, event_id])
+
+
+def delete_event(event_id):
+    """Delete an event from the database."""
+    sql = "DELETE FROM events WHERE id = ?"
+    db.execute(sql, [event_id])
+
+
+def get_space_name(space_code):
+    """Convert space code to human-readable space name."""
+    mapping = {
+        'space1': 'Auditorio',
+        'space2': 'Sala A',
+        'space3': 'Sala B',
+        # Add more mappings if necessary
+    }
+    return mapping.get(space_code, space_code)  # Return the space code itself if not found in the mapping
 
