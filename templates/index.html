@@ -1,156 +1,129 @@
 <!DOCTYPE html>
 <html lang="fi">
-
 <head>
-  <meta charset="UTF-8">
-  <title>Tapahtumakalenteri</title>
-  <style>
-    /* Basic Styling */
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
+    <meta charset="UTF-8">
+    <title>Tapahtumakalenteri</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-    h1 {
-      text-align: center;
-    }
+        th {
+            background-color: lightgray;
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+        }
 
-    .calendar-container {
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      margin-top: 20px;
-    }
+        td {
+            width: 14.28%;
+            height: 40px;
+            border: 1px solid #ddd;
+            text-align: center;
+            vertical-align: middle;
+            position: relative;  /* Positioning for event blocks */
+        }
 
-    .calendar {
-      width: 30%;
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      overflow-x: auto;
-    }
+        .event {
+            text-align: center;
+            padding: 5px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            position: absolute;  /* Positioning within the table cell */
+            width: 100%;
+            top: 50%;  /* Vertical centering */
+            transform: translateY(-50%);
+        }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+        .yksityistilaisuus {
+            background-color: darkgray;
+            color: black;
+        }
 
-    th, td {
-      text-align: center;
-      border: 1px solid #ddd;
-    }
+        .koulutus {
+            background-color: blue;
+        }
 
-    th {
-      background-color: lightgray;
-      padding: 10px;
-    }
+        .kokous {
+            background-color: green;
+        }
 
-    td {
-      height: 40px;
-    }
+        .juhla {
+            background-color: red;
+        }
 
-    .event {
-      padding: 5px;
-      color: white;
-      font-size: 12px;
-      font-weight: bold;
-    }
+        .muu {
+            background-color: purple;
+        }
 
-    .yksityistilaisuus {
-      background-color: black;
-    }
-
-    .koulutus {
-      background-color: blue;
-    }
-
-    .kokous {
-      background-color: green;
-    }
-
-    .juhla {
-      background-color: red;
-    }
-
-    .muu {
-      background-color: purple;
-    }
-
-    .hour-column {
-      width: 50px;
-      background-color: #f4f4f4;
-    }
-
-    .links {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .links a {
-      margin: 0 10px;
-      text-decoration: none;
-      color: #4CAF50;
-    }
-  </style>
+        .week-navigation {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
-
 <body>
-  <h1>Tapahtumakalenteri</h1>
 
-  <div class="links">
-    <a href="/login">Kirjaudu sisään</a>
-    <a href="/register">Luo tunnus</a>
-    <a href="/logout">Kirjaudu ulos</a>
-  </div>
+    <h1>Tapahtumakalenteri</h1>
 
-  {% if session.username %}
-    <p>Olet kirjautunut nimellä {{ session.username }}</p>
-    <a href="/new_event">Ilmoita tapahtuma</a>
-  {% else %}
-    <p>Sinun täytyy <a href="/login">kirjautua sisään</a> tai <a href="/register">rekisteröityä</a> ilmoittaaksesi tapahtuman.</p>
-  {% endif %}
+    <p>
+        <a href="/login">Kirjaudu sisään</a>
+        <a href="/register">Luo tunnus</a>
+        <a href="/logout">Kirjaudu ulos</a>
+    </p>
 
-  <h2>Varaustilanne</h2>
+    {% if session.username %}
+        <a href="/new_event">Ilmoita tapahtuma</a>
+    {% else %}
+        <p>Sinun täytyy <a href="/login">kirjautua sisään</a> tai <a href="/register">rekisteröityä</a> ilmoittaaksesi tapahtuman.</p>
+    {% endif %}
 
-  <div class="calendar-container">
+    <h2>Varaustilanne</h2>
+
+    <div class="week-navigation">
+        <a href="/?week={{ week_offset - 1 }}">Edellinen viikko</a> |
+        <a href="/?week={{ week_offset + 1 }}">Seuraava viikko</a>
+    </div>
+
     {% for space, events in events_by_space.items() %}
-      <div class="calendar">
         <h3>{{ space }}</h3>
         <table>
-          <thead>
-            <tr>
-              <th class="hour-column"></th>
-              {% for day in weekday %}
-                <th>{{ day }}</th>
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody>
-            {% for hour in range(8, 23) %}
-              <tr>
-                <td>{{ hour }}:00</td>
-                {% for day in weekday %}
-                  <td>
-                    {% for event in events %}
-                      {% if event.start <= hour < event.end %}
-                        <div class="event {{ event.type | lower }}">
-                          {{ event.title }}
-                        </div>
-                      {% endif %}
+            <thead>
+                <tr>
+                    <th>Tunti</th>
+                    {% for day in week_dates %}
+                        <th>{{ day }}</th>  <!-- Displays "Ti 04.02.25" -->
                     {% endfor %}
-                  </td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hour in range(8, 23) %}
+                    <tr>
+                        <td>{{ hour }}:00</td>
+                        {% for day_index in range(7) %}
+                            <td>
+                                {% for event in events %}
+                                    {% if event.weekday_index == day_index and event.start <= hour < event.end %}
+                                        <div class="event {{ event.type }}"
+                                             style="height: {{ (event.end - event.start) * 5 }}px;
+                                                    top: {{ (hour - event.start) * 5 }}px;">
+                                            {{ event.title }}<br>
+                                            {{ event.start }}:00 - {{ event.end }}:00
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                    </tr>
                 {% endfor %}
-              </tr>
-            {% endfor %}
-          </tbody>
+            </tbody>
         </table>
-      </div>
     {% endfor %}
-  </div>
 
 </body>
-
 </html>
+
+
+

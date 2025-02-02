@@ -6,48 +6,80 @@ import db
 from werkzeug.security import check_password_hash
 import config
 import events
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = config.secret_key
 
 
-@app.route("/")
-def index():
-    weekday = ["maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"]
+def get_week_dates(base_date):
+    """Get start and end date for the requested week and formatted day names with dates."""
+    start_of_week = base_date - timedelta(days=base_date.weekday())
+    week_dates = [
+        (start_of_week + timedelta(days=i)).strftime("%a %d.%m.%y")  # e.g., "Ti 04.02.25"
+        for i in range(7)
+    ]
+    return start_of_week.strftime("%Y-%m-%d"), (start_of_week + timedelta(days=6)).strftime("%Y-%m-%d"), week_dates
 
-    # Fetch events from database
-    sql = "SELECT title, event_start, event_end, event_space FROM events"
-    event_list = db.query(sql)  # Assuming db.query() returns a list of tuples
 
-    # Organizing events by space
-    events_by_space = {
-        "Auditorio": [],
-        "Kellari": [],
-        "Päälava": []
+def get_events(start_date, end_date):
+    """Get events from the database for the given date range."""
+    sql = """
+        SELECT title, description, event_start, event_end, event_space, event_type
+        FROM events
+        WHERE event_start BETWEEN ? AND ?
+    """
+    event_list = db.query(sql, (start_date, end_date))
+
+    # Create a dictionary for mapping the database event space values to human-readable names
+    space_mapping = {
+        "space1": "Auditorio",
+        "space2": "Kellari",
+        "space3": "Päälava"
     }
 
-    for event in event_list:
-        title, start, end, space = event
+    events_by_space = {space_name: [] for space_name in space_mapping.values()}
+
+    for title, description, start, end, space, event_type in event_list:
         start_time = datetime.strptime(start, "%Y-%m-%dT%H:%M")
         end_time = datetime.strptime(end, "%Y-%m-%dT%H:%M")
 
+        start_hour = start_time.hour
+        end_hour = end_time.hour
+        weekday_index = start_time.weekday()  # Monday = 0, Sunday = 6
+
+        # Map the event space to the human-readable name
+        space_name = space_mapping.get(space, "Unknown")  # Default to "Unknown" if space is not in the mapping
+
+        # Check if event_type is None and assign a default value if so
+        if event_type is None:
+            event_type = "default"  # Assign a default value if event_type is None
+
         event_data = {
             "title": title,
-            "start": start_time.hour,
-            "end": end_time.hour,
-            "day": start_time.strftime('%A').lower(),  # Store lowercase weekday for template use
+            "description": description,
+            "start": start_hour,
+            "end": end_hour,
+            "weekday_index": weekday_index,
+            "type": event_type.lower()  # Ensure type is in lowercase for consistent CSS classes
         }
 
-        # Assign event to the correct space
-        if space == "space1":
-            events_by_space["Auditorio"].append(event_data)
-        elif space == "space2":
-            events_by_space["Kellari"].append(event_data)
-        elif space == "space3":
-            events_by_space["Päälava"].append(event_data)
+        # Append the event data to the corresponding space
+        events_by_space[space_name].append(event_data)
 
-    return render_template("index.html", events_by_space=events_by_space, weekday=weekday)
+    return events_by_space
+
+
+@app.route("/")
+def index():
+    week_offset = int(request.args.get("week", 0))
+    base_date = datetime.today() + timedelta(weeks=week_offset)
+    start_date, end_date, week_dates = get_week_dates(base_date)
+
+    # Get events for the week
+    events_by_space = get_events(start_date, end_date)
+
+    return render_template("index.html", events_by_space=events_by_space, week_offset=week_offset, week_dates=week_dates)
 
 
 @app.route("/new_event", methods=["GET", "POST"])
@@ -62,6 +94,7 @@ def new_event():
         event_start = request.form["event-start"]
         event_end = request.form["event-end"]
         event_space = request.form.get("event-space", "default")
+        event_type = request.form["event-type"]  # Get the event type from the form
 
         start_hour = int(event_start.split("T")[1].split(":")[0])
         end_hour = int(event_end.split("T")[1].split(":")[0])
@@ -71,11 +104,12 @@ def new_event():
             return redirect(url_for("new_event"))
 
         if events.check_event_space_availability(event_start, event_end, event_space):
-            events.add_event(title, description, event_start, event_end, event_space)
-            flash(f"Event '{title}' created successfully!", "success")
+            # Pass event_type when adding the event
+            events.add_event(title, description, event_start, event_end, event_space, event_type)
+            flash(f"Tapahtuma '{title}' luotiin onnistuneesti!", "success")
             return redirect(url_for("new_event"))
         else:
-            flash("Event space is not available for the selected time.", "danger")
+            flash("Tapahtumatila ei ole käytettävissä valittuna aikana.", "danger")
             return redirect(url_for("new_event"))
 
     return render_template("new_event.html")
