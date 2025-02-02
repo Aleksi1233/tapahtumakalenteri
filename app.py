@@ -6,7 +6,7 @@ import db
 from werkzeug.security import check_password_hash
 import config
 import events
-
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = config.secret_key
@@ -14,22 +14,40 @@ app.secret_key = config.secret_key
 
 @app.route("/")
 def index():
-    sql = "SELECT title, event_start, event_end, event_space FROM events"
-    event_list = db.query(sql)
+    weekday = ["maanantai", "tiistai", "keskiviikko", "torstai", "perjantai", "lauantai", "sunnuntai"]
 
-    events_by_space = {"space1": [], "space2": [], "space3": []}
+    # Fetch events from database
+    sql = "SELECT title, event_start, event_end, event_space FROM events"
+    event_list = db.query(sql)  # Assuming db.query() returns a list of tuples
+
+    # Organizing events by space
+    events_by_space = {
+        "Auditorio": [],
+        "Kellari": [],
+        "Päälava": []
+    }
 
     for event in event_list:
         title, start, end, space = event
-        start_hour = int(start.split("T")[1].split(":")[0])
-        end_hour = int(end.split("T")[1].split(":")[0])
+        start_time = datetime.strptime(start, "%Y-%m-%dT%H:%M")
+        end_time = datetime.strptime(end, "%Y-%m-%dT%H:%M")
 
-        if space in events_by_space:
-            events_by_space[space].append((title, start_hour, end_hour))
-        else:
-            continue
+        event_data = {
+            "title": title,
+            "start": start_time.hour,
+            "end": end_time.hour,
+            "day": start_time.strftime('%A').lower(),  # Store lowercase weekday for template use
+        }
 
-    return render_template("index.html", events_by_space=events_by_space)
+        # Assign event to the correct space
+        if space == "space1":
+            events_by_space["Auditorio"].append(event_data)
+        elif space == "space2":
+            events_by_space["Kellari"].append(event_data)
+        elif space == "space3":
+            events_by_space["Päälava"].append(event_data)
+
+    return render_template("index.html", events_by_space=events_by_space, weekday=weekday)
 
 
 @app.route("/new_event", methods=["GET", "POST"])
