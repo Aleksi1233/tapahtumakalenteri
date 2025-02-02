@@ -7,23 +7,50 @@ from werkzeug.security import check_password_hash
 import config
 import events
 
+
 app = Flask(__name__)
 app.secret_key = config.secret_key
 
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    sql = "SELECT title, event_start, event_end, event_space FROM events"
+    event_list = db.query(sql)
+
+    events_by_space = {"space1": [], "space2": [], "space3": []}
+
+    for event in event_list:
+        title, start, end, space = event
+        start_hour = int(start.split("T")[1].split(":")[0])
+        end_hour = int(end.split("T")[1].split(":")[0])
+
+        if space in events_by_space:
+            events_by_space[space].append((title, start_hour, end_hour))
+        else:
+            continue
+
+    return render_template("index.html", events_by_space=events_by_space)
 
 
 @app.route("/new_event", methods=["GET", "POST"])
 def new_event():
+    if "username" not in session:
+        flash("Sinun täytyy kirjautua sisään luodaksesi tapahtuman.", "danger")
+        return redirect(url_for("login"))
+
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
         event_start = request.form["event-start"]
         event_end = request.form["event-end"]
         event_space = request.form.get("event-space", "default")
+
+        start_hour = int(event_start.split("T")[1].split(":")[0])
+        end_hour = int(event_end.split("T")[1].split(":")[0])
+
+        if start_hour < 8 or end_hour > 22:
+            flash("Tapahtuman täytyy olla välillä 08:00 - 22:00.", "danger")
+            return redirect(url_for("new_event"))
 
         if events.check_event_space_availability(event_start, event_end, event_space):
             events.add_event(title, description, event_start, event_end, event_space)
@@ -34,6 +61,26 @@ def new_event():
             return redirect(url_for("new_event"))
 
     return render_template("new_event.html")
+
+
+@app.route("/events")
+def event_list():
+    sql = "SELECT title, event_start, event_end, event_space FROM events"
+    event_list = db.query(sql)
+
+    events_by_space = {"space1": [], "space2": [], "space3": []}
+
+    for event in event_list:
+        title, start, end, space = event
+        start_hour = int(start.split("T")[1].split(":")[0])
+        end_hour = int(end.split("T")[1].split(":")[0])
+
+        if space in events_by_space:
+            events_by_space[space].append((title, start_hour, end_hour))
+        else:
+            continue
+
+    return render_template("index.html", events_by_space=events_by_space)
 
 
 @app.route("/register")

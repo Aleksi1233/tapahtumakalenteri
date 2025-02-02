@@ -17,9 +17,51 @@
     <a href="/register">Luo tunnus</a>
     <a href="/logout">Kirjaudu ulos</a>
   </p>
+{% if session.username %}
   <a href="/new_event">Ilmoita tapahtuma</a>
+{% else %}
+  <p>Sinun täytyy <a href="/login">kirjautua sisään</a> tai <a href="/register">rekisteröityä</a> ilmoittaaksesi tapahtuman.</p>
+{% endif %}
   <p>
+<h2>Varaustilanne</h2>
 
+{% for space, events in events_by_space.items() %}
+  <h3>
+    {% if space == "space1" %}
+      Auditorio (Max 150 hlö)
+    {% elif space == "space2" %}
+      Kellari (Max 35 hlö)
+    {% elif space == "space3" %}
+      Päälava (Max 350 hlö)
+    {% endif %}
+  </h3>
+
+  <table border="1">
+    <tr>
+      <th>Kellonaika</th>
+      <th>Varaustilanne</th>
+    </tr>
+    {% for hour in range(8, 23) %}
+      <tr>
+        <td>{{ hour }}:00</td>
+        <td>
+          {% set booked = false %}
+          {% for event in events %}
+            {% if event[1] <= hour < event[2] %}
+              {% set booked = true %}
+            {% endif %}
+          {% endfor %}
+
+          {% if booked %}
+            <span style="background: red; color: white; padding: 5px;">Varattu</span>
+          {% else %}
+            <span style="background: green; color: white; padding: 5px;">Vapaa</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endfor %}
   </p>
 </body>
 

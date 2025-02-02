@@ -32,7 +32,8 @@
 
     input[type="text"],
     input[type="datetime-local"],
-    textarea {
+    textarea,
+    select {
       width: 100%;
       padding: 10px;
       border: 1px solid #ccc;
@@ -58,7 +59,6 @@
       height: 150px;
     }
 
-    /* Flash message styles */
     .flash-messages {
       margin-bottom: 20px;
     }
@@ -82,13 +82,39 @@
       color: #721c24;
     }
 
+    .space-description {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #f7f7f7;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .links {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .links a {
+      text-decoration: none;
+      color: #4CAF50;
+      margin: 10px;
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+
+    .italic {
+      font-style: italic;
+      font-size: 0.9em;
+    }
   </style>
 </head>
 
 <body>
   <h1>Uusi tapahtuma</h1>
 
-  <!-- Flash Messages Section -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-messages">
@@ -101,36 +127,70 @@
     {% endif %}
   {% endwith %}
 
-  <!-- Event Form -->
-  <form action="/new_event" method="post">
-    <p>
-      Otsikko: <br />
-      <input type="text" name="title" required />
-    </p>
+  {% if event_created %}
+    <div class="links">
+      <a href="{{ url_for('index') }}">Palaa etusivulle</a>
+      <a href="#">Omat tapahtumat</a>
+    </div>
+  {% else %}
+    <form action="/new_event" method="post">
+      <p>
+        Otsikko: <br />
+        <input type="text" name="title" required />
+      </p>
 
-    <p>
-      Kuvaus: <br />
-      <textarea name="description"></textarea>
-    </p>
+      <p>
+        Kuvaus: <br />
+        <textarea name="description"></textarea>
+      </p>
 
-    <p>
-      Aloituspäivämäärä ja aika: <br />
-      <input type="datetime-local" name="event-start" required />
-    </p>
+      <p>
+        Aloituspäivämäärä ja aika: <br />
+        <input type="datetime-local" name="event-start" required />
+      </p>
 
-    <p>
-      Päättymispäivämäärä ja aika: <br />
-      <input type="datetime-local" name="event-end" required />
-    </p>
+      <p>
+        Päättymispäivämäärä ja aika: <br />
+        <input type="datetime-local" name="event-end" required />
+      </p>
 
-    <!-- Optional Event Space Input -->
-    <p>
-      Tapahtumatila: <br />
-      <input type="text" name="event-space" required />
-    </p>
+      <p>
+        Tapahtumatila: <br />
+        <label>
+          <input type="radio" name="event-space" value="space1" required /> Auditorio: Max. henkilömäärä: 150. Soveltuu mainiosti esimerkiksi paneelikeskusteluihin tai koulutustilaisuuksiin.
+        </label><br />
+        <label>
+          <input type="radio" name="event-space" value="space2" required /> Kellari: Max. henkilömäärä: 35. Sopii parhaiten kokoushuoneeksi, tilassa videotykki, konferenssikamera/puhelin ja valkotaulu.
+        </label><br />
+        <label>
+          <input type="radio" name="event-space" value="space3" required /> Päälava: Max. henkilömäärä: 350. Avara tila sopii näyttelyille ja messuille, varustettu monipuolisella esitystekniikalla.
+        </label>
+      </p>
 
-    <input type="submit" value="Luo tapahtuma" />
-  </form>
+      <p>
+        <strong>Valitse tilaisuuden tyyppi:</strong> <br />
+        <span class="italic">Valitsemalla tilaisuuden tyypin henkilökuntamme osaa varautua tarpeisiinne paremmin.</span>
+        <br />
+        <label>
+          <input type="radio" name="event-type" value="Koulutus/Esitelmä" required /> Koulutus/Esitelmä
+        </label><br />
+        <label>
+          <input type="radio" name="event-type" value="Kokous" required /> Kokous
+        </label><br />
+        <label>
+          <input type="radio" name="event-type" value="Juhlatilaisuus" required /> Juhlatilaisuus
+        </label><br />
+        <label>
+          <input type="radio" name="event-type" value="Yksityistilaisuus" required /> Yksityistilaisuus
+        </label><br />
+        <label>
+          <input type="radio" name="event-type" value="Muu" required /> Muu
+        </label>
+      </p>
+
+      <input type="submit" value="Luo tapahtuma" />
+    </form>
+  {% endif %}
 
 </body>
 
