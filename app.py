@@ -79,7 +79,33 @@ def index():
     # Get events for the week
     events_by_space = get_events(start_date, end_date)
 
-    return render_template("index.html", events_by_space=events_by_space, week_offset=week_offset, week_dates=week_dates)
+    # Get selected event types from the filter
+    selected_filters = request.args.getlist("filter")
+
+    # Filter events based on selected event types
+    if selected_filters:
+        filtered_events_by_space = {}
+        for space_name, space_events in events_by_space.items():
+            filtered_events_by_space[space_name] = [
+                event for event in space_events if event["type"] in selected_filters
+            ]
+        events_by_space = filtered_events_by_space
+    else:
+        filtered_events_by_space = events_by_space  # No filters, show all events
+
+    return render_template(
+        "index.html",
+        events_by_space=events_by_space,
+        selected_filters=selected_filters,
+        week_offset=week_offset,
+        week_dates=week_dates
+    )
+
+
+@app.route("/clear_filter")
+def clear_filter():
+    week_offset = int(request.args.get("week", 0))
+    return redirect(url_for('index', week=week_offset))  # Redirect back to the same week with no filter applied
 
 
 @app.route("/new_event", methods=["GET", "POST"])

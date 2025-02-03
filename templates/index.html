@@ -1,3 +1,8 @@
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="fi">
 <head>
@@ -22,7 +27,7 @@
             border: 1px solid #ddd;
             text-align: center;
             vertical-align: middle;
-            position: relative;
+            position: relative;  /* Positioning for event blocks */
         }
 
         .event {
@@ -31,9 +36,9 @@
             color: white;
             font-size: 12px;
             font-weight: bold;
-            position: absolute;
+            position: absolute;  /* Positioning within the table cell */
             width: 100%;
-            top: 50%;
+            top: 50%;  /* Vertical centering */
             transform: translateY(-50%);
         }
 
@@ -62,6 +67,49 @@
             text-align: center;
             margin-bottom: 10px;
         }
+
+        .filter-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .filter input {
+            margin-right: 10px;
+        }
+
+        .filter label {
+            font-size: 16px;
+        }
+        .filter-container {
+    margin-bottom: 20px;
+
+        }
+
+        .filter-options {
+            display: flex;
+            justify-content: space-evenly;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .filter-options label {
+            margin-right: 15px;
+            display: inline-block;
+            font-size: 1rem;
+        }
+
+        .filter-container a {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #f44336;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .filter-container a:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
@@ -69,61 +117,102 @@
     <h1>Tapahtumakalenteri</h1>
 
     <p>
-        {% if session.username %}
-            Tervetuloa, {{ session.username }}!
-            <a href="/logout">Kirjaudu ulos</a> |
-            <a href="/my_events">Omat tapahtumat</a>  <!-- Link to My Events page -->
-        {% else %}
-            <a href="/login">Kirjaudu sisään</a> |
-            <a href="/register">Luo tunnus</a>
-        {% endif %}
+        <a href="/login">Kirjaudu sisään</a>
+        <a href="/register">Luo tunnus</a>
+        <a href="/logout">Kirjaudu ulos</a>
     </p>
+
+    {% if session.username %}
+        <a href="/new_event">Ilmoita tapahtuma</a> |
+        <a href="/my_events">Omat tapahtumat</a>
+    {% else %}
+        <p>Sinun täytyy <a href="/login">kirjautua sisään</a> tai <a href="/register">rekisteröityä</a> ilmoittaaksesi tapahtuman.</p>
+    {% endif %}
 
     <h2>Varaustilanne</h2>
 
-
-    <div class="week-navigation">
-        <a href="/?week={{ week_offset - 1 }}">Edellinen viikko</a> |
-        <a href="/?week={{ week_offset + 1 }}">Seuraava viikko</a>
-    </div>
-
+    <!-- Loop through all event spaces -->
     {% for space, events in events_by_space.items() %}
-        <h3>{{ space }}</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Tunti</th>
-                    {% for day in week_dates %}
-                        <th>{{ day }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for hour in range(8, 23) %}
+        <div class="calendar-container">
+            <h3>{{ space }}</h3>
+
+
+
+            <!-- Week Navigation links between the calendar -->
+            <div class="week-navigation">
+                <a href="/?week={{ week_offset - 1 }}{% for f in selected_filters %}&filter={{ f }}{% endfor %}">Edellinen viikko</a> |
+                <a href="/?week={{ week_offset + 1 }}{% for f in selected_filters %}&filter={{ f }}{% endfor %}">Seuraava viikko</a>
+            </div>
+    <div class="filter-container">
+        <p>Rajaa tuloksia valitsemalla tapahtuman tyyppi:</p>
+        <form method="GET" action="{{ url_for('index') }}">
+            <div class="filter-options">
+                <label>
+                    <input type="checkbox" name="filter" value="koulutus" {% if 'koulutus' in selected_filters %}checked{% endif %}>
+                    Koulutus/Esitelmä
+                </label>
+                <label>
+                    <input type="checkbox" name="filter" value="kokous" {% if 'kokous' in selected_filters %}checked{% endif %}>
+                    Kokous
+                </label>
+                <label>
+                    <input type="checkbox" name="filter" value="juhla" {% if 'juhla' in selected_filters %}checked{% endif %}>
+                    Juhlatilaisuus
+                </label>
+                <label>
+                    <input type="checkbox" name="filter" value="yksityistilaisuus" {% if 'yksityistilaisuus' in selected_filters %}checked{% endif %}>
+                    Yksityistilaisuus
+                </label>
+                <label>
+                    <input type="checkbox" name="filter" value="muu" {% if 'muu' in selected_filters %}checked{% endif %}>
+                    Muu
+                </label>
+            </div>
+            <button type="submit">Suodata</button>
+        </form>
+    <!-- Button to clear the filter -->
+    <a href="{{ url_for('clear_filter', week=week_offset) }}">Poista suodatin</a>
+</div>
+            <!-- The actual calendar table -->
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ hour }}:00</td>
-                        {% for day_index in range(7) %}
-                            <td>
-                                {% for event in events %}
-                                    {% if event.weekday_index == day_index and event.start <= hour < event.end %}
-                                        <div class="event {{ event.type }}"
-                                             style="height: {{ (event.end - event.start) * 5 }}px;
-                                                    top: {{ (hour - event.start) * 5 }}px;">
-                                            {{ event.title }}<br>
-                                            {{ event.start }}:00 - {{ event.end }}:00
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
+                        <th>Tunti</th>
+                        {% for day in week_dates %}
+                            <th>{{ day }}</th>  <!-- Displays "Ti 04.02.25" -->
                         {% endfor %}
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for hour in range(8, 23) %}
+                        <tr>
+                            <td>{{ hour }}:00</td>
+                            {% for day_index in range(7) %}
+                                <td>
+                                    {% for event in events %}
+                                        {% if event.weekday_index == day_index and event.start <= hour < event.end %}
+                                            {% if event.type in selected_filters or not selected_filters %}
+                                                <div class="event {{ event.type }}"
+                                                     style="height: {{ (event.end - event.start) * 5 }}px;
+                                                            top: {{ (hour - event.start) * 5 }}px;">
+                                                    {{ event.title }}<br>
+                                                    {{ event.start }}:00 - {{ event.end }}:00
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     {% endfor %}
 
 </body>
 </html>
+
 
 
 
