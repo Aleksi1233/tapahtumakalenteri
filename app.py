@@ -117,13 +117,17 @@ def new_event():
     if request.method == "POST":
         title = request.form["title"]
         description = request.form["description"]
-        event_start = request.form["event-start"]
-        event_end = request.form["event-end"]
+        event_date = request.form["event-date"]
+        event_start_time = request.form["event-start-time"]
+        event_end_time = request.form["event-end-time"]
         event_space = request.form.get("event-space", "default")
         event_type = request.form["event-type"]  # You need to use event_type
 
-        start_hour = int(event_start.split("T")[1].split(":")[0])
-        end_hour = int(event_end.split("T")[1].split(":")[0])
+        start_hour = int(event_start_time.split(":")[0])
+        end_hour = int(event_end_time.split(":")[0])
+
+        event_start = f"{event_date}T{event_start_time}"
+        event_end = f"{event_date}T{event_end_time}"
 
         if start_hour < 8 or end_hour > 22:
             flash("Tapahtuman täytyy olla välillä 08:00 - 22:00.", "danger")

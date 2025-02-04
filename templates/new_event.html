@@ -145,14 +145,20 @@
       </p>
 
       <p>
-        Aloituspäivämäärä ja aika: <br />
-        <input type="datetime-local" name="event-start" required />
+          Päivämäärä: <br />
+          <input type="date" name="event-date" required />
       </p>
 
       <p>
-        Päättymispäivämäärä ja aika: <br />
-        <input type="datetime-local" name="event-end" required />
+          Alkamisaika: <br />
+          <input type="time" name="event-start-time" required />
       </p>
+
+      <p>
+          Päättymisaika: <br />
+          <input type="time" name="event-end-time" required />
+      </p>
+
 
       <p>
         Tapahtumatila: <br />
@@ -172,7 +178,7 @@
             <span class="italic">Valitsemalla tilaisuuden tyypin henkilökuntamme osaa varautua tarpeisiinne paremmin.</span>
             <br />
             <label>
-                <input type="radio" name="event-type" value="Koulutus/Esitelmä" required /> Koulutus/Esitelmä
+                <input type="radio" name="event-type" value="Koulutus" required /> Koulutus/Esitelmä
             </label><br />
             <label>
                 <input type="radio" name="event-type" value="Kokous" required /> Kokous

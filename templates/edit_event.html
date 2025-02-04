@@ -32,7 +32,7 @@
             <option value="yksityistilaisuus" {% if event.event_type|lower == "yksityistilaisuus" %}selected{% endif %}>Yksityistilaisuus</option>
             <option value="koulutus" {% if event.event_type|lower == "koulutus" %}selected{% endif %}>Koulutus</option>
             <option value="kokous" {% if event.event_type|lower == "kokous" %}selected{% endif %}>Kokous</option>
-            <option value="juhla" {% if event.event_type|lower == "juhla" %}selected{% endif %}>Juhla</option>
+            <option value="juhla" {% if event.event_type|lower == "juhlatilaisuus" %}selected{% endif %}>Juhlatilaisuus</option>
             <option value="muu" {% if event.event_type|lower == "muu" %}selected{% endif %}>Muu</option>
         </select>
         <br><br>
