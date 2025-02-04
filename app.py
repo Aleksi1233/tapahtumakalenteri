@@ -134,7 +134,6 @@ def new_event():
             return redirect(url_for("new_event"))
 
         if events.check_event_space_availability(event_start, event_end, event_space):
-            # Pass event_type along with other parameters
             username = session["username"]
             events.add_event(title, description, event_start, event_end, event_space, event_type, username)
             flash(f"Event '{title}' created successfully!", "success")
@@ -143,7 +142,8 @@ def new_event():
             flash("Event space is not available for the selected time.", "danger")
             return redirect(url_for("new_event"))
 
-    return render_template("new_event.html")
+    user_events = events.get_user_events(session["username"]) if "username" in session else []
+    return render_template("new_event.html", events=user_events)
 
 
 @app.route("/events")
@@ -234,17 +234,21 @@ def create():
     username = request.form["username"]
     password1 = request.form["password1"]
     password2 = request.form["password2"]
+
     if password1 != password2:
-        return "VIRHE: salasanat eivät ole samat"
+        return render_template("register.html", error="VIRHE: Salasanat eivät ole samat.")
+
     password_hash = generate_password_hash(password1)
 
     try:
         sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
         db.execute(sql, [username, password_hash])
-    except sqlite3.IntegrityError:
-        return "VIRHE: tunnus on jo varattu"
 
-    return "Tunnus luotu"
+        session["success_message"] = "Tunnus luotiin onnistuneesti! Kirjaudu sisään ilmoittaaksesi tapahtuman."
+
+        return redirect(url_for("login"))  # Redirect to login
+    except sqlite3.IntegrityError:
+        return render_template("register.html", error="VIRHE: Tunnus on jo varattu.")
 
 
 @app.route("/login", methods=["GET", "POST"])

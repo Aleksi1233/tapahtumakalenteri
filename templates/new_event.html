@@ -197,7 +197,15 @@
       <input type="submit" value="Luo tapahtuma" />
     </form>
   {% endif %}
+    <div class="links">
+        <!-- Always visible: Link to the index page -->
+        <a href="{{ url_for('index') }}">Etusivulle</a>
 
+        <!-- Only visible if the user has events -->
+        {% if session.username and events %}
+            <a href="{{ url_for('my_events') }}">Tarkastele omia tapahtumia</a>
+        {% endif %}
+    </div>
 </body>
 
 </html>

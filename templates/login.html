@@ -6,26 +6,37 @@
 </head>
 
 <body>
-  {% if session.username %}
-  <p>
-    Olet kirjautunut nimellä {{ session.username }}
-  </p>
-  <p>
-    <a href="/logout">Kirjaudu ulos</a>
-  </p>
-  {% else %}
-  <form action="/login" method="post">
-    <p>
-      Tunnus: <br />
-      <input type="text" name="username" />
+
+  <!-- ✅ Move success message to the top -->
+  {% if session.success_message %}
+    <p style="color: green; font-size: 20px; font-weight: bold; text-align: center;">
+        {{ session.success_message }}
     </p>
-    <p>
-      Salasana: <br />
-      <input type="password" name="password" />
-    </p>
-    <input type="submit" value="Kirjaudu" />
-  </form>
+    {% set _ = session.pop('success_message') %}
   {% endif %}
+
+  {% if session.username %}
+    <p>
+      Olet kirjautunut nimellä {{ session.username }}
+    </p>
+    <p>
+      <a href="/logout">Kirjaudu ulos</a>
+    </p>
+  {% else %}
+    <form action="/login" method="post">
+      <p>
+        Tunnus: <br />
+        <input type="text" name="username" />
+      </p>
+      <p>
+        Salasana: <br />
+        <input type="password" name="password" />
+      </p>
+      <input type="submit" value="Kirjaudu" />
+    </form>
+  {% endif %}
+
 </body>
 
 </html>
+

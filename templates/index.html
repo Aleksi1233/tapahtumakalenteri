@@ -117,10 +117,14 @@
     <h1>Tapahtumakalenteri</h1>
 
     <p>
-        <a href="/login">Kirjaudu sisään</a>
-        <a href="/register">Luo tunnus</a>
-        <a href="/logout">Kirjaudu ulos</a>
+        {% if session.username %}
+            <a href="/logout">Kirjaudu ulos</a>
+        {% else %}
+            <a href="/login">Kirjaudu sisään</a>
+            <a href="/register">Luo tunnus</a>
+        {% endif %}
     </p>
+
 
     {% if session.username %}
         <a href="/new_event">Ilmoita tapahtuma</a> |
@@ -149,7 +153,7 @@
             <div class="filter-options">
                 <label>
                     <input type="checkbox" name="filter" value="koulutus" {% if 'koulutus' in selected_filters %}checked{% endif %}>
-                    Koulutus/Esitelmä
+                    Koulutus
                 </label>
                 <label>
                     <input type="checkbox" name="filter" value="kokous" {% if 'kokous' in selected_filters %}checked{% endif %}>
