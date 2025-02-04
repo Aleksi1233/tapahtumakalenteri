@@ -25,7 +25,7 @@ def get_week_dates(base_date):
 def get_events(start_date, end_date):
     """Get events from the database for the given date range."""
     sql = """
-        SELECT title, description, event_start, event_end, event_space, event_type
+        SELECT id, title, description, event_start, event_end, event_space, event_type
         FROM events
         WHERE event_start BETWEEN ? AND ?
     """
@@ -40,7 +40,7 @@ def get_events(start_date, end_date):
 
     events_by_space = {space_name: [] for space_name in space_mapping.values()}
 
-    for title, description, start, end, space, event_type in event_list:
+    for event_id, title, description, start, end, space, event_type in event_list:
         start_time = datetime.strptime(start, "%Y-%m-%dT%H:%M")
         end_time = datetime.strptime(end, "%Y-%m-%dT%H:%M")
 
@@ -56,6 +56,7 @@ def get_events(start_date, end_date):
             event_type = "default"  # Assign a default value if event_type is None
 
         event_data = {
+            "id": event_id,
             "title": title,
             "description": description,
             "start": start_hour,
@@ -267,24 +268,40 @@ def event_page(event_id):
     # Calculate remaining spots
     remaining_spots = event["max_participants"] - total_signed_up
 
+    # Fetch comments for this event
+    comments_sql = "SELECT id, username, comment, timestamp FROM comments WHERE event_id = ? ORDER BY timestamp DESC"
+    comments = db.query(comments_sql, [event_id])
+
     if request.method == "POST":
         if "username" not in session:
-            flash("Sinun täytyy kirjautua sisään ilmoittautuaksesi tapahtumaan!", "danger")
+            flash("Sinun täytyy kirjautua sisään!", "danger")
             return redirect(url_for("login"))
 
-        group_size = int(request.form["group_size"])
+        # If the user submitted a group size for sign-up
+        if "group_size" in request.form:
+            group_size = int(request.form["group_size"])
 
-        # ✅ Check if the group size exceeds available spots
-        if group_size > remaining_spots:
-            flash(f"Virhe, liikaa osallistujia. Vapaita paikkoja jäljellä: {remaining_spots}", "danger")
-        else:
-            sql = "INSERT INTO event_signups (event_id, username, group_size) VALUES (?, ?, ?)"
-            db.execute(sql, [event_id, session["username"], group_size])
-            flash("Ilmoittautuminen onnistui!", "success")
+            if group_size > remaining_spots:
+                flash(f"Virhe, liikaa osallistujia. Vapaita paikkoja jäljellä: {remaining_spots}", "danger")
+            else:
+                sql = "INSERT INTO event_signups (event_id, username, group_size) VALUES (?, ?, ?)"
+                db.execute(sql, [event_id, session["username"], group_size])
+                flash("Ilmoittautuminen onnistui!", "success")
+
+        # If the user submitted a comment
+        elif "comment" in request.form:
+            comment_text = request.form["comment"].strip()
+
+            if comment_text:
+                insert_comment_sql = "INSERT INTO comments (event_id, username, comment) VALUES (?, ?, ?)"
+                db.execute(insert_comment_sql, [event_id, session["username"], comment_text])
+                flash("Kommentti lisätty!", "success")
+            else:
+                flash("Kommentti ei voi olla tyhjä!", "danger")
 
         return redirect(url_for("event_page", event_id=event_id))
 
-    return render_template("event.html", event=event, total_signed_up=total_signed_up, remaining_spots=remaining_spots)
+    return render_template("event.html", event=event, total_signed_up=total_signed_up, remaining_spots=remaining_spots, comments=comments)
 
 
 @app.route("/cancel_signup/<int:event_id>", methods=["POST"])
@@ -296,6 +313,19 @@ def cancel_signup(event_id):
     sql = "DELETE FROM event_signups WHERE event_id = ? AND username = ?"
     db.execute(sql, [event_id, session["username"]])
     flash("Ilmoittautuminen peruutettu!", "success")
+    return redirect(url_for("event_page", event_id=event_id))
+
+
+@app.route("/delete_comment/<int:comment_id>/<int:event_id>", methods=["POST"])
+def delete_comment(comment_id, event_id):
+    if "username" not in session:
+        flash("Sinun täytyy kirjautua sisään poistaaksesi kommentin.", "danger")
+        return redirect(url_for("login"))
+
+    sql = "DELETE FROM comments WHERE id = ? AND username = ?"
+    db.execute(sql, [comment_id, session["username"]])
+    flash("Kommentti poistettu!", "success")
+
     return redirect(url_for("event_page", event_id=event_id))
 
 

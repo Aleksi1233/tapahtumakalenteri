@@ -197,10 +197,12 @@
                                         {% if event.weekday_index == day_index and event.start <= hour < event.end %}
                                             {% if not selected_filters or event.type in selected_filters or event.type == "default" %}
                                                 <div class="event {{ event.type }}"
-                                                     style="height: {{ (event.end - event.start) * 5 }}px;
+                                                    style="height: {{ (event.end - event.start) * 5 }}px;
                                                             top: {{ (hour - event.start) * 5 }}px;">
-                                                    {{ event.title }}<br>
-                                                    {{ event.start }}:00 - {{ event.end }}:00
+                                                    <a href="{{ url_for('event_page', event_id=event.id) }}" style="color: white; text-decoration: none;">
+                                                        {{ event.title }}<br>
+                                                        {{ event.start }}:00 - {{ event.end }}:00
+                                                    </a>
                                                 </div>
                                             {% endif %}
                                         {% endif %}

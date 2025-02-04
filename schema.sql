@@ -24,3 +24,13 @@ CREATE TABLE event_signups (
     FOREIGN KEY(event_id) REFERENCES events(id),
     FOREIGN KEY(username) REFERENCES users(username)
 );
+
+CREATE TABLE comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER,
+    username TEXT,
+    comment TEXT,
+    timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(event_id) REFERENCES events(id),
+    FOREIGN KEY(username) REFERENCES users(username)
+);
