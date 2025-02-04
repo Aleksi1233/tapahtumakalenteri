@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ event.title }}</title>
+</head>
+<body>
+
+<h1>{{ event.title }}</h1>
+<p><strong>Kuvaus:</strong> {{ event.description }}</p>
+<p><strong>Aloitus:</strong> {{ event.event_start }}</p>
+<p><strong>Päättyy:</strong> {{ event.event_end }}</p>
+<p><strong>Tapahtumapaikka:</strong> {{ event.event_space }}</p>
+
+<p><a href="{{ url_for('index') }}">Etusivulle</a></p>
+
+</body>
+</html>

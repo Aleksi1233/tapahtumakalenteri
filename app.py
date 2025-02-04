@@ -251,6 +251,17 @@ def create():
         return render_template("register.html", error="VIRHE: Tunnus on jo varattu.")
 
 
+@app.route("/event/<int:event_id>")
+def event_page(event_id):
+    event = events.get_event_by_id(event_id)
+
+    if event is None:
+        flash("Tapahtumaa ei löytynyt!", "danger")
+        return redirect(url_for("index"))
+
+    return render_template("event.html", event=event)
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
