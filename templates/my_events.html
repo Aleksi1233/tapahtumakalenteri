@@ -33,9 +33,9 @@
                             {% if event.event_space == 'space1' %}
                                 Auditorio
                             {% elif event.event_space == 'space2' %}
-                                Kellari
-                            {% elif event.event_space == 'space3' %}
                                 Päälava
+                            {% elif event.event_space == 'space3' %}
+                                Kellari
                             {% else %}
                                 {{ event.event_space }}
                             {% endif %}

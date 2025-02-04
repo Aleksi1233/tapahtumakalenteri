@@ -22,19 +22,20 @@
 
         <label for="event-space">Tapahtumapaikka</label>
         <select name="event-space" id="event-space">
-            <option value="space1" {% if event.event_space == "space1" %}selected{% endif %}>Space 1</option>
-            <option value="space2" {% if event.event_space == "space2" %}selected{% endif %}>Space 2</option>
-            <option value="space3" {% if event.event_space == "space3" %}selected{% endif %}>Space 3</option>
+            <option value="space1" {% if event.event_space == "space1" %}selected{% endif %}>Auditorio</option>
+            <option value="space2" {% if event.event_space == "space2" %}selected{% endif %}>Päälava</option>
+            <option value="space3" {% if event.event_space == "space3" %}selected{% endif %}>Kellari</option>
         </select><br><br>
 
         <label for="event-type">Tapahtuman Tyyppi</label>
         <select name="event-type" id="event-type">
-            <option value="yksityistilaisuus" {% if event.event_type == "yksityistilaisuus" %}selected{% endif %}>Yksityistilaisuus</option>
-            <option value="koulutus" {% if event.event_type == "koulutus" %}selected{% endif %}>Koulutus</option>
-            <option value="kokous" {% if event.event_type == "kokous" %}selected{% endif %}>Kokous</option>
-            <option value="juhla" {% if event.event_type == "juhla" %}selected{% endif %}>Juhla</option>
-            <option value="muu" {% if event.event_type == "muu" %}selected{% endif %}>Muu</option>
-        </select><br><br>
+            <option value="yksityistilaisuus" {% if event.event_type|lower == "yksityistilaisuus" %}selected{% endif %}>Yksityistilaisuus</option>
+            <option value="koulutus" {% if event.event_type|lower == "koulutus" %}selected{% endif %}>Koulutus</option>
+            <option value="kokous" {% if event.event_type|lower == "kokous" %}selected{% endif %}>Kokous</option>
+            <option value="juhla" {% if event.event_type|lower == "juhla" %}selected{% endif %}>Juhla</option>
+            <option value="muu" {% if event.event_type|lower == "muu" %}selected{% endif %}>Muu</option>
+        </select>
+        <br><br>
 
         <button type="submit">Tallenna Muutokset</button>
     </form>

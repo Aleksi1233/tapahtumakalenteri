@@ -127,12 +127,11 @@ def delete_event(event_id):
 
 
 def get_space_name(space_code):
-    """Convert space code to human-readable space name."""
     mapping = {
         'space1': 'Auditorio',
-        'space2': 'Sala A',
-        'space3': 'Sala B',
-        # Add more mappings if necessary
+        'space2': 'Päälava',
+        'space3': 'Kellari'
     }
-    return mapping.get(space_code, space_code)  # Return the space code itself if not found in the mapping
+    return mapping.get(space_code, space_code)
+
 
