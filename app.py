@@ -132,10 +132,11 @@ def new_event():
         if start_hour < 8 or end_hour > 22:
             flash("Tapahtuman täytyy olla välillä 08:00 - 22:00.", "danger")
             return redirect(url_for("new_event"))
+        max_participants = int(request.form["max_participants"])
 
         if events.check_event_space_availability(event_start, event_end, event_space):
             username = session["username"]
-            events.add_event(title, description, event_start, event_end, event_space, event_type, username)
+            events.add_event(title, description, event_start, event_end, event_space, event_type, username, max_participants)
             flash(f"Event '{title}' created successfully!", "success")
             return redirect(url_for("new_event"))
         else:

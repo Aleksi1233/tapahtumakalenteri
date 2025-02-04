@@ -23,12 +23,12 @@ def get_all_events():
     return events
 
 
-def add_event(title, description, event_start, event_end, event_space, event_type, username):
-    sql = (
-        "INSERT INTO events (title, description, event_start, event_end, event_space, event_type, username) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?)"
-    )
-    db.execute(sql, [title, description, event_start, event_end, event_space, event_type, username])
+def add_event(title, description, event_start, event_end, event_space, event_type, username, max_participants):
+    sql = """
+        INSERT INTO events (title, description, event_start, event_end, event_space, event_type, username, max_participants)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    db.execute(sql, [title, description, event_start, event_end, event_space, event_type, username, max_participants])
 
 
 def check_event_space_availability(event_start, event_end, event_space):
