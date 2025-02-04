@@ -34,8 +34,8 @@ def get_events(start_date, end_date):
     # Create a dictionary for mapping the database event space values to human-readable names
     space_mapping = {
         "space1": "Auditorio",
-        "space2": "Kellari",
-        "space3": "Päälava"
+        "space2": "Päälava",
+        "space3": "Kellari"
     }
 
     events_by_space = {space_name: [] for space_name in space_mapping.values()}
@@ -61,7 +61,7 @@ def get_events(start_date, end_date):
             "start": start_hour,
             "end": end_hour,
             "weekday_index": weekday_index,
-            "type": event_type.lower()  # Ensure type is in lowercase for consistent CSS classes
+            "type": event_type.lower() if event_type else "default"
         }
 
         # Append the event data to the corresponding space

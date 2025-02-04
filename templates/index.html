@@ -191,7 +191,7 @@
                                 <td>
                                     {% for event in events %}
                                         {% if event.weekday_index == day_index and event.start <= hour < event.end %}
-                                            {% if event.type in selected_filters or not selected_filters %}
+                                            {% if not selected_filters or event.type in selected_filters or event.type == "default" %}
                                                 <div class="event {{ event.type }}"
                                                      style="height: {{ (event.end - event.start) * 5 }}px;
                                                             top: {{ (hour - event.start) * 5 }}px;">
