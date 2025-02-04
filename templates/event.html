@@ -12,6 +12,18 @@
 <p><strong>Päättyy:</strong> {{ event.event_end }}</p>
 <p><strong>Tapahtumapaikka:</strong> {{ event.event_space }}</p>
 
+{% if session.username %}
+    <h2>Ilmoittaudu tapahtumaan</h2>
+    <form method="POST">
+        <label for="group_size">Osallistujamäärä:</label>
+        <input type="number" name="group_size" id="group_size" value="1" min="1" required>
+        <button type="submit">Ilmoittaudu</button>
+    </form>
+{% else %}
+    <p><a href="{{ url_for('login') }}">Kirjaudu sisään ilmoittaaksesi</a></p>
+{% endif %}
+
+
 <p><a href="{{ url_for('index') }}">Etusivulle</a></p>
 
 </body>

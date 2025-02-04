@@ -252,13 +252,25 @@ def create():
         return render_template("register.html", error="VIRHE: Tunnus on jo varattu.")
 
 
-@app.route("/event/<int:event_id>")
+@app.route("/event/<int:event_id>", methods=["GET", "POST"])
 def event_page(event_id):
     event = events.get_event_by_id(event_id)
 
     if event is None:
         flash("Tapahtumaa ei löytynyt!", "danger")
         return redirect(url_for("index"))
+
+    if request.method == "POST":
+        if "username" not in session:
+            flash("Sinun täytyy kirjautua sisään ilmoittautuaksesi!", "danger")
+            return redirect(url_for("login"))
+
+        group_size = int(request.form["group_size"])
+        sql = "INSERT INTO event_signups (event_id, username, group_size) VALUES (?, ?, ?)"
+        db.execute(sql, [event_id, session["username"], group_size])
+        flash("Ilmoittautuminen onnistui!", "success")
+
+        return redirect(url_for("event_page", event_id=event_id))
 
     return render_template("event.html", event=event)
 
