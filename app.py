@@ -260,19 +260,43 @@ def event_page(event_id):
         flash("Tapahtumaa ei löytynyt!", "danger")
         return redirect(url_for("index"))
 
+    # Get total signed-up participants
+    sql = "SELECT SUM(group_size) FROM event_signups WHERE event_id = ?"
+    total_signed_up = db.query(sql, [event_id])[0][0] or 0
+
+    # Calculate remaining spots
+    remaining_spots = event["max_participants"] - total_signed_up
+
     if request.method == "POST":
         if "username" not in session:
-            flash("Sinun täytyy kirjautua sisään ilmoittautuaksesi!", "danger")
+            flash("Sinun täytyy kirjautua sisään ilmoittautuaksesi tapahtumaan!", "danger")
             return redirect(url_for("login"))
 
         group_size = int(request.form["group_size"])
-        sql = "INSERT INTO event_signups (event_id, username, group_size) VALUES (?, ?, ?)"
-        db.execute(sql, [event_id, session["username"], group_size])
-        flash("Ilmoittautuminen onnistui!", "success")
+
+        # ✅ Check if the group size exceeds available spots
+        if group_size > remaining_spots:
+            flash(f"Virhe, liikaa osallistujia. Vapaita paikkoja jäljellä: {remaining_spots}", "danger")
+        else:
+            sql = "INSERT INTO event_signups (event_id, username, group_size) VALUES (?, ?, ?)"
+            db.execute(sql, [event_id, session["username"], group_size])
+            flash("Ilmoittautuminen onnistui!", "success")
 
         return redirect(url_for("event_page", event_id=event_id))
 
-    return render_template("event.html", event=event)
+    return render_template("event.html", event=event, total_signed_up=total_signed_up, remaining_spots=remaining_spots)
+
+
+@app.route("/cancel_signup/<int:event_id>", methods=["POST"])
+def cancel_signup(event_id):
+    if "username" not in session:
+        flash("Sinun täytyy kirjautua sisään peruuttaaksesi ilmoittautumisen.", "danger")
+        return redirect(url_for("login"))
+
+    sql = "DELETE FROM event_signups WHERE event_id = ? AND username = ?"
+    db.execute(sql, [event_id, session["username"]])
+    flash("Ilmoittautuminen peruutettu!", "success")
+    return redirect(url_for("event_page", event_id=event_id))
 
 
 @app.route("/login", methods=["GET", "POST"])

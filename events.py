@@ -90,13 +90,13 @@ def get_user_events(username):
 def get_event_by_id(event_id):
     """Get an event by its ID."""
     sql = """
-        SELECT id, title, description, event_start, event_end, event_space, event_type, username
+        SELECT id, title, description, event_start, event_end, event_space, event_type, username, max_participants
         FROM events
         WHERE id = ?
     """
     result = db.query(sql, [event_id])
     if result:
-        event_id, title, description, event_start, event_end, event_space, event_type, username = result[0]
+        event_id, title, description, event_start, event_end, event_space, event_type, username, max_participants = result[0]
         return {
             "id": event_id,
             "title": title,
@@ -105,7 +105,8 @@ def get_event_by_id(event_id):
             "event_end": event_end,
             "event_space": event_space,
             "event_type": event_type,
-            "username": username
+            "username": username,
+            "max_participants": max_participants
         }
     return None
 

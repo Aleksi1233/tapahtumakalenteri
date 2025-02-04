@@ -10,8 +10,10 @@ CREATE TABLE events (
     description TEXT,
     event_start TEXT NOT NULL,
     event_end TEXT NOT NULL,
-    event_space TEXT
-, event_type TEXT, username TEXT
+    event_space TEXT,
+    event_type TEXT,
+    username TEXT,
+    max_participants INTEGER
 );
 
 CREATE TABLE event_signups (

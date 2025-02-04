@@ -7,6 +7,9 @@
 <body>
 
 <h1>{{ event.title }}</h1>
+
+<p><strong>Ilmoittautuneita:</strong> {{ total_signed_up }} / {{ event.max_participants }}</p>
+<p><strong>Vapaita paikkoja:</strong> {{ remaining_spots }}</p>
 <p><strong>Kuvaus:</strong> {{ event.description }}</p>
 <p><strong>Aloitus:</strong> {{ event.event_start }}</p>
 <p><strong>Päättyy:</strong> {{ event.event_end }}</p>
@@ -16,12 +19,17 @@
     <h2>Ilmoittaudu tapahtumaan</h2>
     <form method="POST">
         <label for="group_size">Osallistujamäärä:</label>
-        <input type="number" name="group_size" id="group_size" value="1" min="1" required>
+        <input type="number" name="group_size" id="group_size" value="1" min="1" max="{{ remaining_spots }}" required>
         <button type="submit">Ilmoittaudu</button>
     </form>
 {% else %}
     <p><a href="{{ url_for('login') }}">Kirjaudu sisään ilmoittaaksesi</a></p>
 {% endif %}
+
+<h2>Peru osallistuminen</h2>
+<form action="{{ url_for('cancel_signup', event_id=event.id) }}" method="POST">
+    <button type="submit">Peruuta ilmoittautuminen</button>
+</form>
 
 
 <p><a href="{{ url_for('index') }}">Etusivulle</a></p>
