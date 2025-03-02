@@ -72,7 +72,7 @@ Tapahtumakalenteri on Flask-pohjainen verkkosovellus, jonka avulla käyttäjät 
 - Backend: Flask (Python) + SQLite
 - Frontend: HTML, CSS (ei JavaScriptiä)
 - Tietokanta: SQL-kyselyt suoraan ilman ORM-kirjastoja
-- Turvallisuus: Salasanat hashataan ja CSRF-suojaus käytössä kaikissa POST-pyynnöissä
+- Turvallisuus: Salasanat hashataan ja CSRF-suojaus käytössä kaikissa POST-pyynnöissä 
 
 ## Asennusohjeet
 Jos haluat ajaa sovelluksen paikallisesti:
