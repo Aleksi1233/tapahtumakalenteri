@@ -144,6 +144,14 @@ def new_event():
             flash("Event space is not available for the selected time.", "danger")
             return redirect(url_for("new_event"))
 
+        if not title or not description or not event_start or not event_end or not event_space or not event_type:
+            flash("Täytä kaikki kentät!", "danger")
+            return redirect(url_for("new_event"))
+
+        if end_hour <= start_hour:
+            flash("Päättymisaika täytyy olla alkamisaikaa myöhemmin!", "danger")
+            return redirect(url_for("new_event"))
+
     user_events = events.get_user_events(session["username"]) if "username" in session else []
     return render_template("new_event.html", events=user_events)
 
@@ -236,9 +244,16 @@ def create():
     username = request.form["username"]
     password1 = request.form["password1"]
     password2 = request.form["password2"]
+    if not username or not password1 or not password2:
+        flash("Täytä kaikki kentät!", "danger")
+        return redirect(url_for("register"))
 
     if password1 != password2:
         return render_template("register.html", error="VIRHE: Salasanat eivät ole samat.")
+
+    if len(password1) < 6:
+        flash("Salasanan täytyy olla vähintään 6 merkkiä pitkä!", "danger")
+        return redirect(url_for("register"))
 
     password_hash = generate_password_hash(password1)
 
