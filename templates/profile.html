@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <title>Käyttäjän profiili</title>
+</head>
+<body>
+    <h1>Profiili - {{ session.username }}</h1>
+
+    <p><a href="{{ url_for('index') }}">Takaisin etusivulle</a></p>
+
+    <h2>Omat tapahtumat</h2>
+    {% if user_events %}
+        <ul>
+            {% for event in user_events %}
+                <li>
+                    <a href="{{ url_for('event_page', event_id=event.id) }}">{{ event.title }}</a><br>
+                    {{ event.event_start }} - {{ event.event_end }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Et ole luonut tapahtumia.</p>
+    {% endif %}
+
+    <h2>Osallistumiset</h2>
+    {% if user_signups %}
+        <ul>
+            {% for signup in user_signups %}
+                <li>
+                    <a href="{{ url_for('event_page', event_id=signup.id) }}">{{ signup.title }}</a><br>
+                    {{ signup.event_start }} - {{ signup.event_end }}<br>
+                    Ilmoittauduttu ryhmässä: {{ signup.group_size }} henkilöä
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Et ole ilmoittautunut tapahtumiin.</p>
+    {% endif %}
+
+
+        <h2>Kommentit tapahtumillesi</h2>
+    {% if received_comments %}
+        <ul>
+            {% for comment in received_comments %}
+                <li>
+                    <strong>{{ comment.username }}</strong> kommentoi tapahtumaasi "<em>{{ comment.title }}</em>":<br>
+                    {{ comment.comment }}<br>
+                    <small>{{ comment.timestamp }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Et ole saanut kommentteja tapahtumiisi.</p>
+    {% endif %}
+</body>
+</html>

@@ -335,6 +335,24 @@ def event_page(event_id):
     return render_template("event.html", event=event, total_signed_up=total_signed_up, remaining_spots=remaining_spots, comments=comments)
 
 
+@app.route("/search", methods=["GET"])
+def search():
+    query = request.args.get("query", "").strip()
+
+    if not query:
+        flash("Syötä hakusana!", "danger")
+        return redirect(url_for("index"))
+
+    sql = """
+        SELECT id, title, description, event_start, event_end, event_space, event_type
+        FROM events
+        WHERE title LIKE ? OR description LIKE ?
+    """
+    events = db.query(sql, [f"%{query}%", f"%{query}%"])
+
+    return render_template("search_results.html", events=events, query=query)
+
+
 @app.route("/cancel_signup/<int:event_id>", methods=["POST"])
 def cancel_signup(event_id):
     if "username" not in session:
@@ -362,6 +380,42 @@ def delete_comment(comment_id, event_id):
     flash("Kommentti poistettu!", "success")
 
     return redirect(url_for("event_page", event_id=event_id))
+
+
+@app.route("/profile")
+def profile():
+    if "username" not in session:
+        flash("Sinun täytyy kirjautua sisään nähdäksesi profiilisi!", "danger")
+        return redirect(url_for("login"))
+
+    username = session["username"]
+
+    sql_events = "SELECT id, title, event_start, event_end FROM events WHERE username = ?"
+    user_events = db.query(sql_events, [username])
+
+    sql_signups = """
+        SELECT e.id, e.title, e.event_start, e.event_end, es.group_size
+        FROM event_signups es
+        JOIN events e ON es.event_id = e.id
+        WHERE es.username = ?
+    """
+    user_signups = db.query(sql_signups, [username])
+
+    sql_comments = """
+        SELECT c.comment, c.timestamp, c.username, e.title
+        FROM comments c
+        JOIN events e ON c.event_id = e.id
+        WHERE e.username = ?
+        ORDER BY c.timestamp DESC
+    """
+    received_comments = db.query(sql_comments, [username])
+
+    return render_template(
+        "profile.html",
+        user_events=user_events,
+        user_signups=user_signups,
+        received_comments=received_comments
+    )
 
 
 @app.route("/login", methods=["GET", "POST"])

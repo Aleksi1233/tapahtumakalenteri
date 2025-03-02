@@ -129,9 +129,16 @@
     {% if session.username %}
         <a href="/new_event">Ilmoita tapahtuma</a> |
         <a href="/my_events">Omat tapahtumat</a>
+        {% if session.username %}
+            <a href="{{ url_for('profile') }}">Profiili</a>
+        {% endif %}
     {% else %}
         <p>Sinun täytyy <a href="/login">kirjautua sisään</a> tai <a href="/register">rekisteröityä</a> ilmoittaaksesi tapahtuman.</p>
     {% endif %}
+    <form action="/search" method="GET">
+        <input type="text" name="query" placeholder="Hae tapahtumia..." required>
+        <button type="submit">Hae</button>
+    </form>
 
     <h2>Varaustilanne</h2>
 
