@@ -1,15 +1,21 @@
 import sqlite3
 from flask import Flask
-from flask import redirect, render_template, request, session, url_for, flash
+from flask import redirect, render_template, request, session, url_for, flash, abort
 from werkzeug.security import generate_password_hash
 import db
 from werkzeug.security import check_password_hash
 import config
 import events
 from datetime import datetime, timedelta
+import secrets
 
 app = Flask(__name__)
 app.secret_key = config.secret_key
+
+
+def check_csrf():
+    if "csrf_token" not in session or request.form["csrf_token"] != session["csrf_token"]:
+        abort(403)
 
 
 def get_week_dates(base_date):
@@ -116,6 +122,8 @@ def new_event():
         return redirect(url_for("login"))
 
     if request.method == "POST":
+        check_csrf()
+
         title = request.form["title"]
         description = request.form["description"]
         event_date = request.form["event-date"]
@@ -200,6 +208,7 @@ def edit_event(event_id):
         return redirect(url_for("my_events"))
 
     if request.method == "POST":
+        check_csrf()
         # Get updated event details from the form
         title = request.form["title"]
         description = request.form["description"]
@@ -222,6 +231,8 @@ def delete_event(event_id):
         flash("Sinun täytyy kirjautua sisään poistaaksesi tapahtuman.", "danger")
         return redirect(url_for("login"))
 
+    check_csrf()
+
     event = events.get_event_by_id(event_id)
 
     if event is None or event["username"] != session["username"]:
@@ -236,11 +247,16 @@ def delete_event(event_id):
 
 @app.route("/register")
 def register():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)  # Ensure CSRF token is created
+    print("CSRF Token in Session:", session["csrf_token"])  # Debugging output
     return render_template("register.html")
 
 
 @app.route("/create", methods=["POST"])
 def create():
+    check_csrf()
+
     username = request.form["username"]
     password1 = request.form["password1"]
     password2 = request.form["password2"]
@@ -325,6 +341,8 @@ def cancel_signup(event_id):
         flash("Sinun täytyy kirjautua sisään peruuttaaksesi ilmoittautumisen.", "danger")
         return redirect(url_for("login"))
 
+    check_csrf()
+
     sql = "DELETE FROM event_signups WHERE event_id = ? AND username = ?"
     db.execute(sql, [event_id, session["username"]])
     flash("Ilmoittautuminen peruutettu!", "success")
@@ -336,6 +354,8 @@ def delete_comment(comment_id, event_id):
     if "username" not in session:
         flash("Sinun täytyy kirjautua sisään poistaaksesi kommentin.", "danger")
         return redirect(url_for("login"))
+
+    check_csrf()
 
     sql = "DELETE FROM comments WHERE id = ? AND username = ?"
     db.execute(sql, [comment_id, session["username"]])
@@ -349,17 +369,23 @@ def login():
     if request.method == "GET":
         return render_template("login.html")
 
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-        sql = "SELECT password_hash FROM users WHERE username = ?"
-        password_hash = db.query(sql, [username])[0][0]
+    username = request.form["username"]
+    password = request.form["password"]
 
-    if check_password_hash(password_hash, password):
-        session["username"] = username
+    sql = "SELECT username, password_hash FROM users WHERE username = ?"
+    user = db.query(sql, [username])
+
+    if not user:  # 🔹 If user list is empty, return an error message
+        flash("VIRHE: Käyttäjätunnusta ei löydy!", "danger")
+        return redirect(url_for("login"))
+
+    if check_password_hash(user[0]["password_hash"], password):
+        session["username"] = user[0]["username"]
+        session["csrf_token"] = secrets.token_hex(16)  # Generate new CSRF token
         return redirect("/")
     else:
-        return "VIRHE: väärä tunnus tai salasana"
+        flash("VIRHE: Väärä salasana!", "danger")
+        return redirect(url_for("login"))
 
 
 @app.route("/logout")

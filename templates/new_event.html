@@ -134,6 +134,7 @@
     </div>
   {% else %}
     <form action="/new_event" method="post">
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
       <p>
         Otsikko: <br />
         <input type="text" name="title" required />

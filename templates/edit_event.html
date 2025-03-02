@@ -8,6 +8,8 @@
     <h1>Muokkaa Tapahtumaa</h1>
 
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+
         <label for="title">Tapahtuman Nimi</label>
         <input type="text" id="title" name="title" value="{{ event.title }}" required><br><br>
 
